@@ -20,7 +20,7 @@ namespace algortihms
     using ValueType = typename std::iterator_traits<Iterator>::value_type;
 
     template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
-    InputIterator min_element(InputIterator begin, InputIterator end, Comparator compare = std::less<ValueType<InputIterator>>{})
+    InputIterator min_element(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
     {
         auto min_ = begin;
         for (std::advance(begin, 1); begin != end; std::advance(begin, 1))
@@ -38,7 +38,7 @@ namespace algortihms
         InputIterator begin,
         InputIterator end,
         ValueType<InputIterator> const &value,
-        Comparator compare = std::less<ValueType<InputIterator>>{})
+        Comparator compare = Comparator{})
     {
         for (; begin != end; std::advance(begin, 1))
         {
@@ -55,7 +55,7 @@ namespace algortihms
         InputIterator begin,
         InputIterator end,
         ValueType<InputIterator> const &value,
-        Comparator compare = std::less<ValueType<InputIterator>>{})
+        Comparator compare = Comparator{})
     {
         const auto size = std::distance(begin, end);
         if (size < BINSEARCH_MIN_SIZE)
@@ -85,7 +85,7 @@ namespace algortihms
     }
 
     template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
-    void insertion_sort(InputIterator begin, InputIterator end, Comparator compare = std::less<ValueType<InputIterator>>{})
+    void insertion_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
     {
         for (; begin != end; std::advance(begin, 1))
         {
@@ -95,7 +95,7 @@ namespace algortihms
 
     /// In-situ merge-sort
     template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
-    void merge_sort(InputIterator begin, InputIterator end, Comparator compare = std::less<ValueType<InputIterator>>{})
+    void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
     {
         const auto size = std::distance(begin, end);
 

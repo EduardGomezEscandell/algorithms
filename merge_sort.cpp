@@ -48,7 +48,8 @@ int main(int argc, char **argv)
     verify_sorted(v.begin(), v.end());
 }
 /*
-time ./mergesort 1000    ->    0m0,004s
-time ./mergesort 10000   ->    0m0,012s
-time ./mergesort 100000  ->    0m0,727s
+time ./mergesort 1000    ->    0,004s
+time ./mergesort 10000   ->    0,012s
+time ./mergesort 100000  ->    0,727s
+time ./mergesort 1000000 ->   81,088s
 */
