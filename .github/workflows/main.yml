@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apt-get -y update
+          apt-get -y install cmake
+
+      - name: Run a multi-line script
+        run: |
+          export BUILD_TYPE=Debug
+          bash configure.sh
+  test:
+    runs-on: ubuntu-latest
+      
+    steps:
+      - name: Test
+        run: ./bin/Debug/run_tests
