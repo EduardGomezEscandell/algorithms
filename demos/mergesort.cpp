@@ -1,4 +1,4 @@
-#include "algorithms.hpp"
+#include "include/algorithms.hpp"
 
 #include <cstdlib>
 #include <iostream>
