@@ -4,7 +4,7 @@
 #include <sstream>
 #include <iostream>
 
-namespace algortihms
+namespace my
 {
 
     constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
@@ -89,7 +89,7 @@ namespace algortihms
     {
         for (; begin != end; std::advance(begin, 1))
         {
-            std::swap(*begin, *algortihms::min_element(begin, end, compare));
+            std::swap(*begin, *my::min_element(begin, end, compare));
         }
     }
 

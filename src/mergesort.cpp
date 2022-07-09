@@ -44,7 +44,7 @@ int main(int argc, char **argv)
     }();
 
     auto v = random_vector(sample_size, 10 * sample_size);
-    algortihms::merge_sort(v.begin(), v.end());
+    my::merge_sort(v.begin(), v.end());
     verify_sorted(v.begin(), v.end());
 }
 /*
