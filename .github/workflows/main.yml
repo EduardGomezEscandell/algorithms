@@ -21,10 +21,10 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt-get -y update
-          apt-get -y install cmake
+          sudo apt-get -y update
+          sudo apt-get -y install cmake
 
-      - name: Run a multi-line script
+      - name: Build
         run: |
           export BUILD_TYPE=Debug
           bash configure.sh
