@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: QA-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ "main" ]
@@ -24,9 +28,6 @@ jobs:
         run: |
           export BUILD_TYPE=Debug
           bash configure.sh
-  test:
-    runs-on: ubuntu-latest
-      
-    steps:
+
       - name: Test
         run: ./bin/Debug/run_tests
