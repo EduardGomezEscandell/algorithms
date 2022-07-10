@@ -9,14 +9,11 @@
 namespace my
 {
 
+namespace internal
+{
 constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
 constexpr std::ptrdiff_t BINSEARCH_MIN_SIZE = 100;
-
-#ifndef NDEBUG
-constexpr bool DEBUG = true;
-#else
-constexpr bool DEBUG = false;
-#endif
+}
 
 template <typename Iterator>
 using iterator_value_t = typename std::iterator_traits<Iterator>::value_type;
@@ -25,7 +22,7 @@ template <typename InputIterator, typename UnaryPredicate>
 InputIterator sorted_partition_point(InputIterator begin, InputIterator end, UnaryPredicate pred)
 {
     const auto size = std::distance(begin, end);
-    if (size < BINSEARCH_MIN_SIZE) {
+    if (size < internal::BINSEARCH_MIN_SIZE) {
         return std::partition_point(begin, end, pred);
     }
 
@@ -62,7 +59,7 @@ void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Com
 {
     const auto size = std::distance(begin, end);
 
-    if (size < MERGESORT_MIN_SIZE) {
+    if (size < internal::MERGESORT_MIN_SIZE) {
         insertion_sort(begin, end, compare);
         return;
     }
@@ -70,8 +67,6 @@ void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     auto middle = std::next(begin, size / 2);
     merge_sort(begin, middle);
     merge_sort(middle, end);
-
-    [[maybe_unused]] const auto old_begin = begin;
 
     // Merging
     while (begin != middle && middle != end) {
@@ -81,12 +76,6 @@ void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Com
             middle = new_middle;
         }
         std::advance(begin, 1);
-
-        if constexpr (DEBUG) {
-            display(old_begin, begin, "[");
-            display(begin, middle, "]");
-            display(middle, end, "\n");
-        }
     }
 }
 }
