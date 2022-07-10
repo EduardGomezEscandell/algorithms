@@ -1,8 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <sstream>
-#include <iostream>
 #include <algorithm>
 #include <numeric>
 
@@ -14,9 +12,6 @@ namespace internal
 constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
 constexpr std::ptrdiff_t BINSEARCH_MIN_SIZE = 100;
 }
-
-template <typename Iterator>
-using iterator_value_t = typename std::iterator_traits<Iterator>::value_type;
 
 template <typename InputIterator, typename UnaryPredicate>
 InputIterator sorted_partition_point(InputIterator begin, InputIterator end, UnaryPredicate pred)
@@ -33,19 +28,9 @@ InputIterator sorted_partition_point(InputIterator begin, InputIterator end, Una
     return sorted_partition_point(midpoint, end, pred);
 }
 
-template <typename InputIterator>
-void display(InputIterator begin, const InputIterator end, std::string_view endstr = "\n")
-{
-    std::stringstream ss;
-    for (; begin != end; std::advance(begin, 1)) {
-        ss << *begin << ' ';
-    }
-    std::string s = ss.str();
-    std::string_view v{s.c_str(), s.size() > 0 ? s.size() - 1 : 0};
-    std::cout << v << endstr;
-}
-
-template <typename InputIterator, typename Comparator = std::less<iterator_value_t<InputIterator>>>
+/// In-situ insertion-sort
+template <typename InputIterator,
+          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 void insertion_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
     for (; begin != end; std::advance(begin, 1)) {
@@ -54,7 +39,8 @@ void insertion_sort(InputIterator begin, InputIterator end, Comparator compare =
 }
 
 /// In-situ merge-sort
-template <typename InputIterator, typename Comparator = std::less<iterator_value_t<InputIterator>>>
+template <typename InputIterator,
+          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
     const auto size = std::distance(begin, end);
