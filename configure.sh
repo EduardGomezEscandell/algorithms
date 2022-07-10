@@ -13,6 +13,7 @@ echo "Build type: ${BUILD_TYPE}"
 export BUILD_DIR="${PROJECT_DIR}/build"
 export BIN_DIR="${PROJECT_DIR}/bin/${BUILD_TYPE}"
 export SOURCE_DIR="${PROJECT_DIR}"
+# export DO_TEST=1
 
 # Building
 cmake                                               \
@@ -39,4 +40,6 @@ else
     echo "Build step successful"
 fi
 
-./bin/${BUILD_TYPE}/run_tests
+if [ "${DO_TEST}" ]; then
+    ./bin/${BUILD_TYPE}/run_tests
+fi

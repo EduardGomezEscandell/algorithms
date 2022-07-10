@@ -2,6 +2,7 @@
 
 // Project includes
 #include "test_bigint.hpp"
+#include "test_algorithms.hpp"
 
 // External library includes
 #include <doctest/doctest.h>

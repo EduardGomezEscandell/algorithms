@@ -23,9 +23,9 @@ InputIterator sorted_partition_point(InputIterator begin, InputIterator end, Una
 
     const auto midpoint = std::next(begin, size / 2);
     if (pred(*midpoint)) {
-        return sorted_partition_point(begin, midpoint, pred);
+        return sorted_partition_point(midpoint, end, pred);
     }
-    return sorted_partition_point(midpoint, end, pred);
+    return sorted_partition_point(begin, midpoint, pred);
 }
 
 /// In-situ insertion-sort
@@ -51,13 +51,13 @@ void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     }
 
     auto middle = std::next(begin, size / 2);
-    merge_sort(begin, middle);
-    merge_sort(middle, end);
+    merge_sort(begin, middle, compare);
+    merge_sort(middle, end, compare);
 
     // Merging
     while (begin != middle && middle != end) {
         if (!compare(*begin, *middle)) {
-            auto new_middle = sorted_partition_point(middle, end, [&](auto x) { return x == *begin; });
+            auto new_middle = sorted_partition_point(middle, end, [&](auto x) { return compare(x, *begin); });
             begin = std::rotate(begin, middle, new_middle);
             middle = new_middle;
         }
