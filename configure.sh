@@ -38,3 +38,5 @@ if [ $? != 0 ]; then
 else
     echo "Build step successful"
 fi
+
+./bin/${BUILD_TYPE}/run_tests

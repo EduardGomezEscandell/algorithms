@@ -3,6 +3,8 @@
 #include <functional>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
+#include <numeric>
 
 namespace my
 {
@@ -17,50 +19,21 @@ constexpr bool DEBUG = false;
 #endif
 
 template <typename Iterator>
-using ValueType = typename std::iterator_traits<Iterator>::value_type;
+using iterator_value_t = typename std::iterator_traits<Iterator>::value_type;
 
-template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
-InputIterator min_element(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
-{
-    auto min_ = begin;
-    for (std::advance(begin, 1); begin != end; std::advance(begin, 1)) {
-        if (compare(*begin, *min_)) {
-            min_ = begin;
-        }
-    }
-    return min_;
-}
-
-template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
-InputIterator partition_point(InputIterator begin,
-                              InputIterator end,
-                              ValueType<InputIterator> const &value,
-                              Comparator compare = Comparator{})
-{
-    for (; begin != end; std::advance(begin, 1)) {
-        if (!compare(*begin, value)) {
-            return begin;
-        }
-    }
-    return end;
-}
-
-template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
-InputIterator sorted_partition_point(InputIterator begin,
-                                     InputIterator end,
-                                     ValueType<InputIterator> const &value,
-                                     Comparator compare = Comparator{})
+template <typename InputIterator, typename UnaryPredicate>
+InputIterator sorted_partition_point(InputIterator begin, InputIterator end, UnaryPredicate pred)
 {
     const auto size = std::distance(begin, end);
     if (size < BINSEARCH_MIN_SIZE) {
-        return partition_point(begin, end, value, compare);
+        return std::partition_point(begin, end, pred);
     }
 
     const auto midpoint = std::next(begin, size / 2);
-    if (compare(value, *midpoint)) {
-        return sorted_partition_point(begin, midpoint, value, compare);
+    if (pred(*midpoint)) {
+        return sorted_partition_point(begin, midpoint, pred);
     }
-    return sorted_partition_point(midpoint, end, value, compare);
+    return sorted_partition_point(midpoint, end, pred);
 }
 
 template <typename InputIterator>
@@ -75,16 +48,16 @@ void display(InputIterator begin, const InputIterator end, std::string_view ends
     std::cout << v << endstr;
 }
 
-template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
+template <typename InputIterator, typename Comparator = std::less<iterator_value_t<InputIterator>>>
 void insertion_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
     for (; begin != end; std::advance(begin, 1)) {
-        std::swap(*begin, *my::min_element(begin, end, compare));
+        std::swap(*begin, *std::min_element(begin, end, compare));
     }
 }
 
 /// In-situ merge-sort
-template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
+template <typename InputIterator, typename Comparator = std::less<iterator_value_t<InputIterator>>>
 void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
     const auto size = std::distance(begin, end);
@@ -103,7 +76,7 @@ void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     // Merging
     while (begin != middle && middle != end) {
         if (!compare(*begin, *middle)) {
-            auto new_middle = sorted_partition_point(middle, end, *begin, compare);
+            auto new_middle = sorted_partition_point(middle, end, [&](auto x) { return x == *begin; });
             begin = std::rotate(begin, middle, new_middle);
             middle = new_middle;
         }
