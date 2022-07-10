@@ -36,20 +36,20 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
         CHECK_EQ(it4, std::cend(c));
     }
 
-    SUBCASE("insertion_sort")
+    SUBCASE("selection_sort")
     {
         TContainer a{1, 8, 9, 13, 6, 13, 10, 13, 0, 18};
         const TContainer asc{0, 1, 6, 8, 9, 10, 13, 13, 13, 18};
         const TContainer des{18, 13, 13, 13, 10, 9, 8, 6, 1, 0};
 
-        my::insertion_sort(std::begin(a), std::end(a));
+        my::selection_sort(std::begin(a), std::end(a));
         CHECK_EQ(a, asc);
 
-        my::insertion_sort(std::begin(a), std::end(a), std::greater<>{});
+        my::selection_sort(std::begin(a), std::end(a), std::greater<>{});
         CHECK_EQ(a, des);
 
         TContainer d{};
-        my::insertion_sort(std::begin(d), std::end(d));
+        my::selection_sort(std::begin(d), std::end(d));
         CHECK_EQ(d, TContainer{});
     }
 

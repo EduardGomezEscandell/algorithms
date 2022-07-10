@@ -31,7 +31,7 @@ InputIterator sorted_partition_point(InputIterator begin, InputIterator end, Una
 /// In-situ insertion-sort
 template <typename InputIterator,
           typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
-void insertion_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
+void selection_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
     for (; begin != end; std::advance(begin, 1)) {
         std::swap(*begin, *std::min_element(begin, end, compare));
@@ -46,7 +46,7 @@ void merge_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     const auto size = std::distance(begin, end);
 
     if (size < internal::MERGESORT_MIN_SIZE) {
-        insertion_sort(begin, end, compare);
+        selection_sort(begin, end, compare);
         return;
     }
 
