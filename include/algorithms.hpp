@@ -16,7 +16,8 @@ constexpr bool DEBUG = true;
 constexpr bool DEBUG = false;
 #endif
 
-template <typename Iterator> using ValueType = typename std::iterator_traits<Iterator>::value_type;
+template <typename Iterator>
+using ValueType = typename std::iterator_traits<Iterator>::value_type;
 
 template <typename InputIterator, typename Comparator = std::less<ValueType<InputIterator>>>
 InputIterator min_element(InputIterator begin, InputIterator end, Comparator compare = Comparator{})

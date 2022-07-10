@@ -49,3 +49,4 @@ StatementAttributeLikeMacros: []
 TabWidth: 4
 UseCRLF: false
 UseTab: Never
+AlwaysBreakTemplateDeclarations: Yes

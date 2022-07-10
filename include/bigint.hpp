@@ -12,46 +12,54 @@
 namespace my
 {
 
-template <typename T> class big_uint; // forward declaration
+template <typename T>
+class big_uint; // forward declaration
 
 namespace internal
 {
-template <typename D> big_uint<D> most_significant_n(big_uint<D> input, std::size_t n)
+template <typename D>
+big_uint<D> most_significant_n(big_uint<D> input, std::size_t n)
 {
     return big_uint<D>(std::next(input.digits_.begin(), n), input.digits_.end());
 }
 
-template <typename D> big_uint<D> least_significant_n(big_uint<D> input, std::size_t n)
+template <typename D>
+big_uint<D> least_significant_n(big_uint<D> input, std::size_t n)
 {
     return big_uint<D>(input.digits_.begin(), std::next(input.digits_.begin(), n));
 }
 
-template <typename T> constexpr std::size_t hi_mask()
+template <typename T>
+constexpr std::size_t hi_mask()
 {
     static_assert(std::is_unsigned<T>::value, "T must be unsigned");
     T t = ~T{0};
     return t << (std::numeric_limits<T>::digits / 2);
 }
 
-template <typename T> constexpr std::size_t lo_mask()
+template <typename T>
+constexpr std::size_t lo_mask()
 {
     static_assert(std::is_unsigned<T>::value, "T must be unsigned");
     return ~hi_mask<T>();
 }
 
-template <typename T> T lo(T x)
+template <typename T>
+T lo(T x)
 {
     static_assert(std::is_unsigned<T>::value, "T must be unsigned");
     return x & lo_mask<T>();
 }
 
-template <typename T> T hi(T x)
+template <typename T>
+T hi(T x)
 {
     static_assert(std::is_unsigned<T>::value, "T must be unsigned");
     return x >> (std::numeric_limits<T>::digits / 2);
 }
 
-template <typename D> std::tuple<D, D> sum_digits(D L, D R)
+template <typename D>
+std::tuple<D, D> sum_digits(D L, D R)
 {
     constexpr auto max = std::numeric_limits<D>::max();
     if (L > max - R) { // overflow
@@ -60,7 +68,8 @@ template <typename D> std::tuple<D, D> sum_digits(D L, D R)
     return std::make_tuple(L + R, 0);
 }
 
-template <typename D> std::tuple<D, D> prod_digits(D lhs, D rhs)
+template <typename D>
+std::tuple<D, D> prod_digits(D lhs, D rhs)
 {
     if (lhs == 0 || rhs == 0)
         return std::make_tuple(0, 0);
@@ -95,7 +104,8 @@ template <typename D> std::tuple<D, D> prod_digits(D lhs, D rhs)
 }
 } // namespace internal
 
-template <typename Dtype> class big_uint
+template <typename Dtype>
+class big_uint
 {
   public:
     using D = Dtype;
