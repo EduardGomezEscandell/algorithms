@@ -5,8 +5,9 @@
 
 #include <vector>
 #include <list>
+#include <forward_list>
 
-TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int>)
+TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int>, std::forward_list<int>)
 {
     SUBCASE("sorted_partition_point")
     {
@@ -38,14 +39,14 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
     SUBCASE("insertion_sort")
     {
         TContainer a{1, 8, 9, 13, 6, 13, 10, 13, 0, 18};
-        const TContainer b{0, 1, 6, 8, 9, 10, 13, 13, 13, 18};
-        const TContainer c(std::crbegin(b), std::crend(b));
+        const TContainer asc{0, 1, 6, 8, 9, 10, 13, 13, 13, 18};
+        const TContainer des{18, 13, 13, 13, 10, 9, 8, 6, 1, 0};
 
         my::insertion_sort(std::begin(a), std::end(a));
-        CHECK_EQ(a, b);
+        CHECK_EQ(a, asc);
 
         my::insertion_sort(std::begin(a), std::end(a), std::greater<>{});
-        CHECK_EQ(a, c);
+        CHECK_EQ(a, des);
 
         TContainer d{};
         my::insertion_sort(std::begin(d), std::end(d));
