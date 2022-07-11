@@ -76,4 +76,61 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
         my::merge_sort(std::begin(c), std::end(c));
         CHECK_EQ(c, TContainer{});
     }
+
+    SUBCASE("sort_and_count_inversions")
+    {
+        if constexpr (std::is_convertible<
+                        typename std::iterator_traits<typename TContainer::iterator>::iterator_category,
+                        std::bidirectional_iterator_tag>::value) {
+
+            constexpr std::size_t arrsize = my::internal::MERGESORT_MIN_SIZE * 2.1;
+            std::array<int, arrsize> arr{};
+            std::iota(arr.begin(), arr.end(), 0);
+
+            TContainer asc(arr.cbegin(), arr.cend());
+            TContainer des(arr.crbegin(), arr.crend());
+
+            // Empty
+            {
+                TContainer c{};
+                auto invs = my::sort_and_count_inversions(std::begin(c), std::end(c));
+                CHECK_EQ(invs, 0);
+            }
+            // Small array
+            {
+                TContainer c{1, 3, 5, 2, 4, 6};
+                auto invs = my::sort_and_count_inversions(std::begin(c), std::end(c));
+                CHECK_EQ(invs, 3);
+            }
+
+            // Ascending-Ascending
+            {
+                auto copy = asc;
+                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy));
+                CHECK_EQ(invs, 0);
+            }
+
+            // Descending-Ascending
+            {
+                auto copy = asc;
+                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy), std::greater<int>{});
+                constexpr auto expected = arrsize * (arrsize - 1) / 2;
+                CHECK_EQ(invs, expected);
+            }
+
+            // Ascending-Descending
+            {
+                auto copy = des;
+                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy));
+                constexpr auto expected = arrsize * (arrsize - 1) / 2;
+                CHECK_EQ(invs, expected);
+            }
+            // Descending-Descending
+            {
+                auto copy = des;
+                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy), std::greater<int>{});
+                CHECK_EQ(invs, 0);
+            }
+        }
+    }
 }

@@ -13,12 +13,14 @@ echo "Build type: ${BUILD_TYPE}"
 export BUILD_DIR="${PROJECT_DIR}/build"
 export BIN_DIR="${PROJECT_DIR}/bin/${BUILD_TYPE}"
 export SOURCE_DIR="${PROJECT_DIR}"
-# export DO_TEST=1
+export DO_TEST="${DO_TEST:-0}"
+export CMAKE_ENABLE_SANITIZERS="${CMAKE_ENABLE_SANITIZERS:-0}"
 
 # Building
-cmake                                               \
--B"${BUILD_DIR}/${BUILD_TYPE}" -H"${SOURCE_DIR}"    \
--DCMAKE_BUILD_TYPE=${BUILD_TYPE}                    \
+cmake                                                \
+-B"${BUILD_DIR}/${BUILD_TYPE}" -H"${SOURCE_DIR}"     \
+-DCMAKE_BUILD_TYPE=${BUILD_TYPE}                     \
+-DCMAKE_ENABLE_SANITIZERS=${CMAKE_ENABLE_SANITIZERS} \
 -DBIN_DIR="${BIN_DIR}"
 
 if [ $? != 0 ]; then
@@ -40,6 +42,6 @@ else
     echo "Build step successful"
 fi
 
-if [ "${DO_TEST}" ]; then
+if [ $DO_TEST = true ] ; then
     ./bin/${BUILD_TYPE}/run_tests
 fi
