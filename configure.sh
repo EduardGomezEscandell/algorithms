@@ -2,25 +2,23 @@
 
 clear
 
+# Options
 export CC="clang"
 export CXX="clang++"
-
-export PROJECT_DIR="$(pwd -P)"
-
 export BUILD_TYPE=${BUILD_TYPE:-Release}
-echo "Build type: ${BUILD_TYPE}"
+export IS_TEST_BUILD=${IS_TEST_BUILD:-false} # Indicates whether this build is made for testing purposes
 
+# Path setup
+export PROJECT_DIR="$(pwd -P)"
 export BUILD_DIR="${PROJECT_DIR}/build"
 export BIN_DIR="${PROJECT_DIR}/bin/${BUILD_TYPE}"
 export SOURCE_DIR="${PROJECT_DIR}"
-export DO_TEST="${DO_TEST:-0}"
-export CMAKE_ENABLE_SANITIZERS="${CMAKE_ENABLE_SANITIZERS:-0}"
 
 # Building
-cmake                                                \
--B"${BUILD_DIR}/${BUILD_TYPE}" -H"${SOURCE_DIR}"     \
--DCMAKE_BUILD_TYPE=${BUILD_TYPE}                     \
--DCMAKE_ENABLE_SANITIZERS=${CMAKE_ENABLE_SANITIZERS} \
+cmake                              \
+-B"${BUILD_DIR}/${BUILD_TYPE}"     \
+-DCMAKE_BUILD_TYPE=${BUILD_TYPE}   \
+-DIS_TEST_BUILD=${IS_TEST_BUILD}   \
 -DBIN_DIR="${BIN_DIR}"
 
 if [ $? != 0 ]; then
@@ -40,8 +38,4 @@ if [ $? != 0 ]; then
     exit 1
 else
     echo "Build step successful"
-fi
-
-if [ $DO_TEST = true ] ; then
-    ./bin/${BUILD_TYPE}/run_tests
 fi
