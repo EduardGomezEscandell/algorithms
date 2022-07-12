@@ -254,9 +254,8 @@ class big_uint
         return result;
     }
 
-    friend /* Underflow undefined */
-      big_uint
-      operator-(const big_uint& lhs, big_uint rhs)
+    /* Underflow undefined */
+    friend big_uint operator-(const big_uint& lhs, big_uint rhs)
     {
         // Two's complement
         rhs.digits_.resize(lhs.digits_.size(), 0u);
