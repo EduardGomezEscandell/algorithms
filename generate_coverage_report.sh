@@ -10,7 +10,7 @@ llvm-profdata --help > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "Please install llvm:"
     echo "sudo apt install llvm"
-    exit
+    exit 1
 fi
 
 # Generate coverage report
