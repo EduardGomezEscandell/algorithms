@@ -13,8 +13,13 @@ add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 if(IS_TEST_BUILD)
     message("This build is for testing.")
     
+    # Sanitizers
     add_compile_options(-fsanitize=address -fsanitize=undefined -fsanitize=leak)
     add_link_options(-fsanitize=address -fsanitize=undefined -fsanitize=leak)
+
+    # Code coverage instrumentation
+    add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
+    add_link_options(-fprofile-instr-generate -fcoverage-mapping)
     
     add_subdirectory(tests)
 else()
