@@ -24,12 +24,22 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get -y update
-          sudo apt-get -y install cmake
+          sudo apt-get upgrade
+          sudo apt-get -y install cmake llvm clang
 
-      - name: Build
+      - name: Build and test
         run: |
           export BUILD_TYPE=Debug
+          export IS_TEST_BUILD=true
           bash configure.sh
 
-      - name: Test
-        run: ./bin/Debug/run_tests
+      - name: Generate test coverage report
+        run: |
+          export DO_OPEN_REPORT=false
+          bash generate_coverage_report.sh
+      
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Coverage report
+          path: coverage/report.html
+
