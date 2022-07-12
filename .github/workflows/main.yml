@@ -25,7 +25,7 @@ jobs:
         run: |
           sudo apt-get -y update
           sudo apt-get upgrade
-          sudo apt-get -y install cmake llvm-11
+          sudo apt-get -y install cmake llvm clang
 
       - name: Build and test
         run: |
