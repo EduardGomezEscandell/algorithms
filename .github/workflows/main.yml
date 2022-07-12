@@ -32,3 +32,13 @@ jobs:
           export IS_TEST_BUILD=true
           bash configure.sh
 
+      - name: Generate test coverage report
+        run: |
+          export DO_OPEN_REPORT=false
+          bash generate_coverage_report.sh
+      
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Coverage report
+          path: coverage/report.html
+

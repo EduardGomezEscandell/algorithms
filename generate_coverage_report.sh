@@ -3,6 +3,7 @@ export COVERAGE_DIR="$(pwd -P)/coverage"
 export LLVM_PROFILE_FILE="${COVERAGE_DIR}/testcov.profraw"
 export LLVM_PROFMERGE_FILE="${COVERAGE_DIR}/testcov.profdata"
 export EXECUTABLE="./bin/Debug/run_tests"
+export DO_OPEN_REPORT=${DO_OPEN_REPORT:-true}
 
 # Dependencies
 llvm-profdata --help > /dev/null 2>&1
@@ -39,4 +40,6 @@ ${EXECUTABLE}                                                      \
 rm -rf ${LLVM_PROFILE_FILE} ${LLVM_PROFMERGE_FILE}
 
 # Open report
-( open "${COVERAGE_DIR}/report.html" &> /dev/null )
+if [ ${DO_OPEN_REPORT} == true ]; then
+    ( open "${COVERAGE_DIR}/report.html" &> /dev/null )
+fi
