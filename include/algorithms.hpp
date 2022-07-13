@@ -12,20 +12,21 @@ namespace internal
 constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
 constexpr std::ptrdiff_t BINSEARCH_MIN_SIZE = 100;
 
+/// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
 template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
-BiderectionalIterator sort_last_forward(BiderectionalIterator begin,
-                                        BiderectionalIterator end,
+BiderectionalIterator sort_last_forward(BiderectionalIterator first,
+                                        BiderectionalIterator last,
                                         Comparator comp,
                                         SwapCounter* swaps)
 {
     constexpr bool count_swaps = !std::is_same_v<SwapCounter, void>;
 
-    if (begin == end) {
-        return end;
+    if (first == last) {
+        return last;
     }
 
-    auto rend = std::reverse_iterator(begin);
-    auto rbegin = std::reverse_iterator(end);
+    auto rend = std::reverse_iterator(first);
+    auto rbegin = std::reverse_iterator(last);
 
     return std::adjacent_find(rbegin,
                               rend,
@@ -63,9 +64,9 @@ void selection_sort_impl(InputIterator begin, InputIterator end, Comparator comp
     }
 }
 
-// Quadratic search algorithm for forward iterators
+// Non-recursive search algorithm metaprogramming
 template <typename InputIterator, typename Comparator, typename SwapCounter>
-void quadratic_sort(InputIterator begin, InputIterator end, Comparator compare, SwapCounter* swaps)
+void non_recursive_sort(InputIterator begin, InputIterator end, Comparator compare, SwapCounter* swaps)
 {
     if constexpr (std::is_convertible<typename std::iterator_traits<InputIterator>::iterator_category,
                                       std::bidirectional_iterator_tag>::value) {
@@ -105,7 +106,7 @@ void merge_sort_impl(InputIterator begin, InputIterator end, Comparator compare,
     const auto size = std::distance(begin, end);
 
     if (size < internal::MERGESORT_MIN_SIZE) {
-        quadratic_sort<InputIterator, Comparator, SwapCounter>(begin, end, compare, swaps);
+        non_recursive_sort<InputIterator, Comparator, SwapCounter>(begin, end, compare, swaps);
         return;
     }
 

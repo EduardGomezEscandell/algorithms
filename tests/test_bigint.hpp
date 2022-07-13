@@ -8,6 +8,8 @@ TEST_CASE_TEMPLATE("bigint.hpp", WORD, std::uint8_t, unsigned short, unsigned lo
 
     SUBCASE("IO")
     {
+        CHECK_THROWS_AS(([] { return INT{"this is not a number!"}; }()), std::invalid_argument);
+
         const INT a{"0"};
         CHECK_EQ(a.to_string(), "0x0");
 
@@ -31,6 +33,58 @@ TEST_CASE_TEMPLATE("bigint.hpp", WORD, std::uint8_t, unsigned short, unsigned lo
 
         const INT h{"408637658154"};
         CHECK_EQ(h.to_string(), "0x5f24b3d42a");
+
+        std::stringstream ss;
+        ss << h;
+        CHECK_EQ(ss.str(), "0x5f24b3d42a");
+    }
+    SUBCASE("Comparisson")
+    {
+        const INT a{"564128465318751287458645385"};
+        const INT b{"564128465318751287458645385564264532864531245128451284521"};
+
+        CHECK(a < b);
+        CHECK(a <= b);
+        CHECK_FALSE(a == b);
+        CHECK_FALSE(a >= b);
+        CHECK_FALSE(a > b);
+
+        CHECK_FALSE(b < a);
+        CHECK_FALSE(b <= a);
+        CHECK_FALSE(b == a);
+        CHECK(b >= a);
+        CHECK(b > a);
+
+        constexpr std::string_view cd = "1563565315465125125424651328645";
+        const INT c{cd};
+        const INT d{cd};
+
+        CHECK_FALSE(c < d);
+        CHECK(c <= d);
+        CHECK(c == d);
+        CHECK(c >= d);
+        CHECK_FALSE(c > d);
+
+        CHECK_FALSE(d < c);
+        CHECK(d <= c);
+        CHECK(d == c);
+        CHECK(d >= c);
+        CHECK_FALSE(d > c);
+
+        const INT g{"34531268453124653154631254635421345531"};
+        const INT h{"40863765815454612546132562546132546232"};
+
+        CHECK(g < h);
+        CHECK(g <= h);
+        CHECK_FALSE(g == h);
+        CHECK_FALSE(g >= h);
+        CHECK_FALSE(g > h);
+
+        CHECK_FALSE(h < g);
+        CHECK_FALSE(h <= g);
+        CHECK_FALSE(h == g);
+        CHECK(h >= g);
+        CHECK(h > g);
     }
     SUBCASE("Addition")
     {
