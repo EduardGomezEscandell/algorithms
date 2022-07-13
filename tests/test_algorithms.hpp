@@ -11,33 +11,46 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 {
     SUBCASE("sorted_partition_point")
     {
+        // Empty case
+        const TContainer c{};
+        const auto it0 = my::sorted_partition_point(std::cbegin(c), std::cend(c), [](auto x) { return x > 3; });
+        CHECK_EQ(it0, std::cend(c));
+
         constexpr std::size_t arrsize = my::internal::BINSEARCH_MIN_SIZE * 2.1;
         std::array<int, arrsize> arr{};
         std::iota(arr.begin(), arr.end(), 0);
 
-        TContainer a(arr.cbegin(), arr.cend());
+        TContainer data(arr.cbegin(), arr.cend());
 
-        const auto it = my::sorted_partition_point(std::cbegin(a), std::cend(a), [](auto x) { return x < 4; });
-        const auto dist = std::distance(std::cbegin(a), it);
+        // Left side
+        const auto it1 = my::sorted_partition_point(std::cbegin(data), std::cend(data), [](auto x) { return x < 4; });
+        const auto dist = std::distance(std::cbegin(data), it1);
         CHECK_EQ(dist, 4);
 
-        const auto it2 = my::sorted_partition_point(std::cbegin(a), std::cend(a),
-                                                    [](auto x) { return static_cast<std::size_t>(x) < (arrsize * 2); });
-        CHECK_EQ(it2, std::cend(a));
+        // Right side
+        const auto it2 = my::sorted_partition_point(std::cbegin(data), std::cend(data),
+                                                    [](auto x) { return x < std::ptrdiff_t(arrsize) - 10; });
+        const auto dist2 = std::distance(it2, std::cend(data));
+        CHECK_EQ(dist2, 10);
 
+        // Reverse
         TContainer b(arr.crbegin(), arr.crend());
         const auto it3 = my::sorted_partition_point(std::cbegin(b), std::cend(b),
                                                     [](auto x) { return x > my::internal::BINSEARCH_MIN_SIZE; });
         const auto dist3 = std::distance(std::cbegin(b), it3);
         CHECK_EQ(dist3, arrsize - my::internal::BINSEARCH_MIN_SIZE - 1);
 
-        const TContainer c{};
-        const auto it4 = my::sorted_partition_point(std::cbegin(c), std::cend(c), [](auto x) { return x > 3; });
-        CHECK_EQ(it4, std::cend(c));
+        // Not found
+        const auto it4 = my::sorted_partition_point(std::cbegin(data), std::cend(data),
+                                                    [](auto x) { return static_cast<std::size_t>(x) < (arrsize * 2); });
+        CHECK_EQ(it4, std::cend(data));
     }
 
     SUBCASE("selection_sort")
     {
+        TContainer empty_c{};
+        my::selection_sort(std::begin(empty_c), std::end(empty_c));
+
         TContainer a{1, 8, 9, 13, 6, 13, 10, 13, 0, 18};
         const TContainer asc{0, 1, 6, 8, 9, 10, 13, 13, 13, 18};
         const TContainer des{18, 13, 13, 13, 10, 9, 8, 6, 1, 0};
@@ -47,10 +60,28 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 
         my::selection_sort(std::begin(a), std::end(a), std::greater<>{});
         CHECK_EQ(a, des);
+    }
 
-        TContainer d{};
-        my::selection_sort(std::begin(d), std::end(d));
-        CHECK_EQ(d, TContainer{});
+    SUBCASE("insertion_sort")
+    {
+        // Skipping for forward-iterable-only containers
+        if constexpr (std::is_convertible<
+                        typename std::iterator_traits<typename TContainer::iterator>::iterator_category,
+                        std::bidirectional_iterator_tag>::value) {
+            TContainer empty_c{};
+            my::insertion_sort(std::begin(empty_c), std::end(empty_c));
+            CHECK_EQ(empty_c, TContainer{});
+
+            TContainer a{1, 8, 9, 13, 6, 13, 10, 13, 0, 18};
+            const TContainer asc{0, 1, 6, 8, 9, 10, 13, 13, 13, 18};
+            const TContainer des{18, 13, 13, 13, 10, 9, 8, 6, 1, 0};
+
+            my::insertion_sort(std::begin(a), std::end(a));
+            CHECK_EQ(a, asc);
+
+            my::insertion_sort(std::begin(a), std::end(a), std::greater<>{});
+            CHECK_EQ(a, des);
+        }
     }
 
     SUBCASE("merge_sort")
