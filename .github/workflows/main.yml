@@ -29,7 +29,8 @@ jobs:
       - name: Build and test
         run: |
           export BUILD_TYPE=Debug
-          export IS_TEST_BUILD=true
+          export DO_BUILD_TESTS=true
+          export DO_INSTRUMENT=true
           bash configure.sh
 
       - name: Generate test coverage report
