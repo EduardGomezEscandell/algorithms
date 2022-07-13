@@ -10,8 +10,8 @@ message("Build type: ${CMAKE_BUILD_TYPE}")
 
 add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
-if(IS_TEST_BUILD)
-    message("This build is for testing.")
+if(DO_INSTRUMENT)
+    message("Instrumentation enabled")
     
     # Sanitizers
     add_compile_options(-fsanitize=address -fsanitize=undefined -fsanitize=leak)
@@ -21,11 +21,22 @@ if(IS_TEST_BUILD)
     add_compile_options(-fprofile-instr-generate -fcoverage-mapping)
     add_link_options(-fprofile-instr-generate -fcoverage-mapping)
     
-    add_subdirectory(tests)
 else()
-    message("This build is not for testing.")
+    message("Instrumentation disabled")
+endif()
+
+if (DO_BUILD_TESTS)
+    message("Tests will be built")
+    add_subdirectory(tests)
 endif()
 
 add_subdirectory(include)
 add_subdirectory(external_libraries)
 add_subdirectory(demos)
+
+add_custom_target(
+    copy-compile-commands ALL
+    ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_BINARY_DIR}/compile_commands.json
+        ${CMAKE_CURRENT_LIST_DIR}
+    )
