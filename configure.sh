@@ -14,6 +14,7 @@ export PROJECT_DIR="$(pwd -P)"
 export BUILD_DIR="${PROJECT_DIR}/build"
 export BIN_DIR="${PROJECT_DIR}/bin/${BUILD_TYPE}"
 export SOURCE_DIR="${PROJECT_DIR}"
+export LLVM_PROFILE_FILE="${PROJECT_DIR}/coverage/testcov.profraw" # If instrumented, indicates where test code coverage file goes
 
 # Building
 cmake                               \
