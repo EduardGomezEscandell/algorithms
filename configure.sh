@@ -6,8 +6,9 @@ clear
 export CC="clang"
 export CXX="clang++"
 export BUILD_TYPE=${BUILD_TYPE:-Release}
-export DO_BUILD_TESTS=${DO_BUILD_TESTS:-false} # Indicates whether to build tests
-export DO_INSTRUMENT=${DO_INSTRUMENT:-false} # Indicates whether to add instrumentation
+export DO_BUILD_TESTS=${DO_BUILD_TESTS:-false}  # Indicates whether to build tests
+export DO_RUN_TESTS=${DO_RUN_TESTS:-false}      # Indicates whether to run tests after compiling
+export DO_INSTRUMENT=${DO_INSTRUMENT:-false}    # Indicates whether to add instrumentation
 
 # Path setup
 export PROJECT_DIR="$(pwd -P)"
@@ -21,6 +22,7 @@ cmake                               \
 -B"${BUILD_DIR}/${BUILD_TYPE}"      \
 -DCMAKE_BUILD_TYPE=${BUILD_TYPE}    \
 -DDO_BUILD_TESTS=${DO_BUILD_TESTS}  \
+-DDO_RUN_TESTS=${DO_RUN_TESTS}      \
 -DDO_INSTRUMENT=${DO_INSTRUMENT}    \
 -DBIN_DIR="${BIN_DIR}"
 

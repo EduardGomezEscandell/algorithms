@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-test:
+  Debug:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,12 +26,16 @@ jobs:
           sudo apt-get -y update
           sudo apt-get -y install cmake llvm clang
 
-      - name: Build and test
+      - name: Build
         run: |
           export BUILD_TYPE=Debug
           export DO_BUILD_TESTS=true
           export DO_INSTRUMENT=true
+          export DO_RUN_TESTS=false
           bash configure.sh
+      
+      - name: Test
+        run: ./bin/Debug/run_tests
 
       - name: Generate test coverage report
         run: |
@@ -42,4 +46,28 @@ jobs:
         with:
           name: Coverage report
           path: coverage/report.html
+
+  Release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'true'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install cmake
+
+      - name: Build
+        run: |
+          export BUILD_TYPE=Release
+          export DO_BUILD_TESTS=true
+          export DO_INSTRUMENT=false
+          export DO_RUN_TESTS=false
+          bash configure.sh
+      
+      - name: Test
+        run: ./bin/Release/run_tests
 
