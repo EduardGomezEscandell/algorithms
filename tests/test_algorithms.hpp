@@ -108,6 +108,30 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
         CHECK_EQ(c, TContainer{});
     }
 
+    SUBCASE("quick_sort")
+    {
+        constexpr std::size_t arrsize = my::internal::QUICKSORT_MIN_SIZE * 2.1;
+        std::array<int, arrsize> arr{};
+        std::iota(arr.begin(), arr.end(), 0);
+
+        TContainer asc(arr.cbegin(), arr.cend());
+        TContainer des(arr.crbegin(), arr.crend());
+        TContainer des2(des);
+
+        // Ascending
+        my::quick_sort(std::begin(des2), std::end(des2));
+        CHECK_EQ(asc, des2);
+
+        // Descending
+        my::quick_sort(std::begin(asc), std::end(asc), std::greater<int>{});
+        CHECK_EQ(asc, des);
+
+        // Empty
+        TContainer c{};
+        my::quick_sort(std::begin(c), std::end(c));
+        CHECK_EQ(c, TContainer{});
+    }
+
     SUBCASE("sort_and_count_inversions")
     {
         if constexpr (std::is_convertible<

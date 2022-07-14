@@ -11,6 +11,7 @@ namespace internal
 {
 constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
 constexpr std::ptrdiff_t BINSEARCH_MIN_SIZE = 100;
+constexpr std::ptrdiff_t QUICKSORT_MIN_SIZE = 10;
 
 /// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
 template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
@@ -166,6 +167,24 @@ std::size_t sort_and_count_inversions(InputIterator begin, InputIterator end, Co
     std::size_t swaps = 0;
     internal::merge_sort_impl<InputIterator, Comparator, std::size_t>(begin, end, compare, &swaps);
     return swaps;
+}
+
+/// In-situ, non-randomized quicksort
+template <typename InputIterator,
+          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
+{
+    const auto size = std::distance(begin, end);
+    if (size < internal::QUICKSORT_MIN_SIZE) {
+        my::internal::non_recursive_sort<InputIterator, Comparator, void>(begin, end, compare, nullptr);
+        return;
+    }
+
+    const auto pivot = *std::next(begin, size / 2);
+    auto partition_point = std::partition(begin, end, [&](auto& x) -> bool { return compare(x, pivot); });
+
+    quick_sort(begin, partition_point, compare);
+    quick_sort(partition_point, end, compare);
 }
 
 }
