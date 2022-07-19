@@ -196,4 +196,35 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
             }
         }
     }
+
+    SUBCASE("partition")
+    {
+        // Empty
+        {
+            TContainer c{};
+            auto pp = my::partition(std::begin(c), std::end(c), [](auto x) { return x < 4; });
+            CHECK_EQ(c, TContainer{});
+            CHECK_EQ(pp, std::end(c));
+        }
+        // Small
+        {
+            TContainer c{1, 2, 3, 4, 5, 6, 7};
+            auto pp = my::partition(std::begin(c), std::end(c), [](auto x) { return x % 2 != 0; });
+
+            CHECK_EQ(std::distance(std::begin(c), pp), 4);
+            std::for_each(std::begin(c), pp, [](auto x) { CHECK(x % 2 != 0); });
+            std::for_each(pp, std::end(c), [](auto x) { CHECK(x % 2 == 0); });
+        }
+        // Big
+        {
+            constexpr auto size = 101;
+            TContainer c(size, {});
+            std::iota(c.begin(), c.end(), 0);
+            auto pp = my::partition(std::begin(c), std::end(c), [](auto x) { return x % 2 != 0; });
+
+            CHECK_EQ(std::distance(std::begin(c), pp), size / 2);
+            std::for_each(std::begin(c), pp, [](auto x) { CHECK(x % 2 != 0); });
+            std::for_each(pp, std::end(c), [](auto x) { CHECK(x % 2 == 0); });
+        }
+    }
 }

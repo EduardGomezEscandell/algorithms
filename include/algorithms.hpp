@@ -11,9 +11,9 @@ namespace my
 
 namespace internal
 {
-constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 10;
+constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
 constexpr std::ptrdiff_t BINSEARCH_MIN_SIZE = 100;
-constexpr std::ptrdiff_t QUICKSORT_MIN_SIZE = 10;
+constexpr std::ptrdiff_t QUICKSORT_MIN_SIZE = 100;
 
 /// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
 template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
@@ -63,7 +63,7 @@ void selection_sort_impl(InputIterator begin, InputIterator end, Comparator comp
 {
     for (; begin != end; std::advance(begin, 1)) {
         auto min_elem = std::min_element(begin, end, compare);
-        std::swap(*begin, *min_elem);
+        std::iter_swap(begin, min_elem);
     }
 }
 
@@ -179,6 +179,25 @@ OutputIterator merge_sort_impl(InputIterator begin,
                                     compare,
                                     swaps);
 }
+
+}
+
+/** Splits the array into two parts. The first part is composed of all entries that
+ * fulfil the predicate. Those that don't, are moved to the second part. The first
+ * item of the second part is returned.
+ */
+
+template <typename Iterator, typename UnaryPredicate>
+Iterator partition(Iterator begin, Iterator end, UnaryPredicate pred)
+{
+    auto partition_point = begin;
+    for (; begin != end; std::advance(begin, 1)) {
+        if (pred(*begin)) {
+            std::iter_swap(partition_point, begin);
+            std::advance(partition_point, 1);
+        }
+    }
+    return partition_point;
 }
 
 template <typename InputIterator,
