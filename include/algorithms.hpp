@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <algorithm>
 #include <iterator>
@@ -17,11 +18,21 @@ struct AlgoConfig
     static std::ptrdiff_t MERGESORT_MIN_SIZE;
     static std::ptrdiff_t BINSEARCH_MIN_SIZE;
     static std::ptrdiff_t QUICKSORT_MIN_SIZE;
+
+    enum QuicksortPivotChoice
+    {
+        FIRST,
+        LAST,
+        SAMPLE_3
+    };
+
+    static QuicksortPivotChoice QUICKSORT_PIVOT_CHOICE;
 };
 
 inline std::ptrdiff_t AlgoConfig::MERGESORT_MIN_SIZE = 100;
 inline std::ptrdiff_t AlgoConfig::BINSEARCH_MIN_SIZE = 100;
 inline std::ptrdiff_t AlgoConfig::QUICKSORT_MIN_SIZE = 100;
+inline auto AlgoConfig::QUICKSORT_PIVOT_CHOICE = AlgoConfig::QuicksortPivotChoice::FIRST;
 
 /// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
 template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
@@ -265,6 +276,38 @@ std::size_t sort_and_count_inversions(InputIterator begin,
     return swaps;
 }
 
+namespace internal
+{
+
+template <typename ForwardIterator, typename Comparator>
+ForwardIterator quick_sort_choose_pivot(ForwardIterator begin, ForwardIterator end, Comparator&& compare)
+{
+    switch (AlgoConfig::QUICKSORT_PIVOT_CHOICE) {
+    case AlgoConfig::QuicksortPivotChoice::FIRST:
+        return begin;
+    case AlgoConfig::QuicksortPivotChoice::LAST: {
+        const auto size = std::distance(begin, end);
+        if (size == 0) {
+            return begin;
+        }
+        return std::next(begin, size - 1);
+    }
+    case AlgoConfig::QuicksortPivotChoice::SAMPLE_3: {
+        const auto size = std::distance(begin, end);
+        if (size == 0) {
+            return begin;
+        }
+        std::array<ForwardIterator, 3> arr{begin, std::next(begin, size / 2), std::next(begin, size - 1)};
+
+        auto iter_comp = [&](const auto& it1, const auto& it2) { return compare(*it1, *it2); };
+        non_recursive_sort<typename std::array<ForwardIterator, 3>::iterator, decltype(iter_comp), void>(
+          arr.begin(), arr.end(), iter_comp, nullptr);
+        return arr[1];
+    }
+    }
+}
+}
+
 /// In-situ, non-randomized quicksort
 template <typename InputIterator,
           typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
@@ -276,10 +319,21 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
         return;
     }
 
-    const auto pivot = *std::next(begin, size / 2);
-    auto partition_point = my::partition(begin, end, [&](auto& x) -> bool { return compare(x, pivot); });
+    auto pivot = internal::quick_sort_choose_pivot(begin, end, compare);
 
-    quick_sort(begin, partition_point, compare);
+    // Copying pivot value to begin
+    std::iter_swap(pivot, begin);
+    pivot = begin;
+    std::advance(begin, 1);
+
+    auto partition_point = my::partition(begin, end, [&](const auto& x) -> bool { return compare(x, *pivot); });
+
+    // Sort left side, if it exists
+    if (partition_point != begin) {
+        auto last_left = std::next(begin, std::distance(begin, partition_point) - 1);
+        std::iter_swap(pivot, last_left);
+        quick_sort(begin, last_left, compare);
+    }
     quick_sort(partition_point, end, compare);
 }
 
