@@ -18,8 +18,8 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
         const auto it0 = my::sorted_partition_point(std::cbegin(c), std::cend(c), [](auto x) { return x > 3; });
         CHECK_EQ(it0, std::cend(c));
 
-        constexpr std::size_t arrsize = my::internal::BINSEARCH_MIN_SIZE * 2.1;
-        std::array<int, arrsize> arr{};
+        const std::size_t arrsize = my::internal::AlgoConfig::BINSEARCH_MIN_SIZE * 2.1;
+        std::vector<int> arr(arrsize, 0);
         std::iota(arr.begin(), arr.end(), 0);
 
         TContainer data(arr.cbegin(), arr.cend());
@@ -31,20 +31,20 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 
         // Right side
         const auto it2 = my::sorted_partition_point(std::cbegin(data), std::cend(data),
-                                                    [](auto x) { return x < std::ptrdiff_t(arrsize) - 10; });
+                                                    [&](auto x) { return x < std::ptrdiff_t(arrsize) - 10; });
         const auto dist2 = std::distance(it2, std::cend(data));
         CHECK_EQ(dist2, 10);
 
         // Reverse
         TContainer b(arr.crbegin(), arr.crend());
-        const auto it3 = my::sorted_partition_point(std::cbegin(b), std::cend(b),
-                                                    [](auto x) { return x > my::internal::BINSEARCH_MIN_SIZE; });
+        const auto it3 = my::sorted_partition_point(
+          std::cbegin(b), std::cend(b), [](auto x) { return x > my::internal::AlgoConfig::BINSEARCH_MIN_SIZE; });
         const auto dist3 = std::distance(std::cbegin(b), it3);
-        CHECK_EQ(dist3, arrsize - my::internal::BINSEARCH_MIN_SIZE - 1);
+        CHECK_EQ(dist3, arrsize - my::internal::AlgoConfig::BINSEARCH_MIN_SIZE - 1);
 
         // Not found
-        const auto it4 = my::sorted_partition_point(std::cbegin(data), std::cend(data),
-                                                    [](auto x) { return static_cast<std::size_t>(x) < (arrsize * 2); });
+        const auto it4 = my::sorted_partition_point(
+          std::cbegin(data), std::cend(data), [&](auto x) { return static_cast<std::size_t>(x) < (arrsize * 2); });
         CHECK_EQ(it4, std::cend(data));
     }
 
@@ -88,8 +88,8 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 
     SUBCASE("merge_sort")
     {
-        constexpr std::size_t arrsize = my::internal::MERGESORT_MIN_SIZE * 2.1;
-        std::array<int, arrsize> arr{};
+        const std::size_t arrsize = my::internal::AlgoConfig::MERGESORT_MIN_SIZE * 2.1;
+        std::vector<int> arr(arrsize, 0);
         std::iota(arr.begin(), arr.end(), 0);
 
         TContainer asc(arr.cbegin(), arr.cend());
@@ -114,8 +114,8 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 
     SUBCASE("quick_sort")
     {
-        constexpr std::size_t arrsize = my::internal::QUICKSORT_MIN_SIZE * 2.1;
-        std::array<int, arrsize> arr{};
+        const std::size_t arrsize = my::internal::AlgoConfig::QUICKSORT_MIN_SIZE * 2.1;
+        std::vector<int> arr(arrsize, 0);
         std::iota(arr.begin(), arr.end(), 0);
 
         TContainer asc(arr.cbegin(), arr.cend());
@@ -142,8 +142,8 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
                         typename std::iterator_traits<typename TContainer::iterator>::iterator_category,
                         std::bidirectional_iterator_tag>::value) {
 
-            constexpr std::size_t arrsize = my::internal::MERGESORT_MIN_SIZE * 2.1;
-            std::array<int, arrsize> arr{};
+            const std::size_t arrsize = my::internal::AlgoConfig::MERGESORT_MIN_SIZE * 2.1;
+            std::vector<int> arr(arrsize, 0);
             std::iota(arr.begin(), arr.end(), 0);
 
             TContainer asc(arr.cbegin(), arr.cend());
@@ -176,7 +176,7 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
                 TContainer outp{asc};
                 auto invs = my::sort_and_count_inversions(std::cbegin(asc), std::cend(asc), std::begin(outp),
                                                           std::greater<int>{});
-                constexpr auto expected = arrsize * (arrsize - 1) / 2;
+                const auto expected = arrsize * (arrsize - 1) / 2;
                 CHECK_EQ(invs, expected);
             }
 
@@ -184,7 +184,7 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
             {
                 TContainer outp{des};
                 auto invs = my::sort_and_count_inversions(std::cbegin(des), std::cend(des), std::begin(outp));
-                constexpr auto expected = arrsize * (arrsize - 1) / 2;
+                const auto expected = arrsize * (arrsize - 1) / 2;
                 CHECK_EQ(invs, expected);
             }
             // Descending-Descending

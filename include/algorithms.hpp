@@ -11,9 +11,17 @@ namespace my
 
 namespace internal
 {
-constexpr std::ptrdiff_t MERGESORT_MIN_SIZE = 100;
-constexpr std::ptrdiff_t BINSEARCH_MIN_SIZE = 100;
-constexpr std::ptrdiff_t QUICKSORT_MIN_SIZE = 100;
+
+struct AlgoConfig
+{
+    static std::ptrdiff_t MERGESORT_MIN_SIZE;
+    static std::ptrdiff_t BINSEARCH_MIN_SIZE;
+    static std::ptrdiff_t QUICKSORT_MIN_SIZE;
+};
+
+inline std::ptrdiff_t AlgoConfig::MERGESORT_MIN_SIZE = 100;
+inline std::ptrdiff_t AlgoConfig::BINSEARCH_MIN_SIZE = 100;
+inline std::ptrdiff_t AlgoConfig::QUICKSORT_MIN_SIZE = 100;
 
 /// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
 template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
@@ -87,7 +95,7 @@ template <typename InputIterator, typename UnaryPredicate>
 InputIterator sorted_partition_point(InputIterator begin, InputIterator end, UnaryPredicate pred)
 {
     const auto size = std::distance(begin, end);
-    if (size < internal::BINSEARCH_MIN_SIZE) {
+    if (size < internal::AlgoConfig::BINSEARCH_MIN_SIZE) {
         return std::partition_point(begin, end, pred);
     }
 
@@ -152,7 +160,7 @@ OutputIterator merge_sort_impl(InputIterator begin,
 {
     const auto size = std::distance(begin, end);
 
-    if (size < internal::MERGESORT_MIN_SIZE) {
+    if (size < AlgoConfig::MERGESORT_MIN_SIZE) {
         auto out_end = std::copy(begin, end, out_begin);
         non_recursive_sort<OutputIterator, Comparator, SwapCounter>(out_begin, out_end, compare, swaps);
         return out_end;
@@ -263,7 +271,7 @@ template <typename InputIterator,
 void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
     const auto size = std::distance(begin, end);
-    if (size < internal::QUICKSORT_MIN_SIZE) {
+    if (size < internal::AlgoConfig::QUICKSORT_MIN_SIZE) {
         my::internal::non_recursive_sort<InputIterator, Comparator, void>(begin, end, compare, nullptr);
         return;
     }
