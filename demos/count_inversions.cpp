@@ -8,7 +8,9 @@
 
 int main()
 {
-    std::vector<unsigned int> data;
+    using datatype = unsigned int;
+
+    std::vector<datatype> data;
     data.reserve(100'000);
 
     auto file = std::ifstream("data/numbers-1-to-100k-unsorted.txt");
@@ -19,11 +21,13 @@ int main()
     }
 
     while (!file.eof()) {
-        unsigned int num;
+        datatype num;
         file >> num;
         data.push_back(num);
     }
     std::cout << "Read " << data.size() << " values" << std::endl;
-    auto inversions = my::sort_and_count_inversions(data.begin(), data.end());
+    auto ouput = std::vector<datatype>(data.size(), 0);
+
+    auto inversions = my::sort_and_count_inversions(data.cbegin(), data.cend(), ouput.begin());
     std::cout << "Found " << inversions << " inversions" << std::endl;
 }

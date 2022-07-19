@@ -1,11 +1,13 @@
 #pragma once
 
 #include <doctest/doctest.h>
+
 #include "include/algorithms.hpp"
 
 #include <vector>
 #include <list>
 #include <forward_list>
+#include <execution>
 
 TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int>, std::forward_list<int>)
 {
@@ -92,20 +94,22 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 
         TContainer asc(arr.cbegin(), arr.cend());
         TContainer des(arr.crbegin(), arr.crend());
-        TContainer des2(des);
 
         // Ascending
-        my::merge_sort(std::begin(des2), std::end(des2));
-        CHECK_EQ(asc, des2);
+        auto outp = TContainer(arrsize, {});
+        my::merge_sort(std::cbegin(des), std::cend(des), std::begin(outp));
+        CHECK_EQ(asc, outp);
 
         // Descending
-        my::merge_sort(std::begin(asc), std::end(asc), std::greater<int>{});
-        CHECK_EQ(asc, des);
+        std::for_each(std::execution::par_unseq, std::begin(outp), std::end(outp), [](auto& x) { x = {}; });
+        my::merge_sort(std::cbegin(asc), std::cend(asc), std::begin(outp), std::greater<int>{});
+        CHECK_EQ(des, outp);
 
         // Empty
+        outp = TContainer{};
         TContainer c{};
-        my::merge_sort(std::begin(c), std::end(c));
-        CHECK_EQ(c, TContainer{});
+        my::merge_sort(std::begin(c), std::end(c), std::begin(outp));
+        CHECK_EQ(outp, TContainer{});
     }
 
     SUBCASE("quick_sort")
@@ -147,43 +151,47 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
 
             // Empty
             {
+                TContainer outp{};
                 TContainer c{};
-                auto invs = my::sort_and_count_inversions(std::begin(c), std::end(c));
+                auto invs = my::sort_and_count_inversions(std::cbegin(c), std::cend(c), std::begin(outp));
                 CHECK_EQ(invs, 0);
             }
             // Small array
             {
                 TContainer c{1, 3, 5, 2, 4, 6};
-                auto invs = my::sort_and_count_inversions(std::begin(c), std::end(c));
+                TContainer outp{c};
+                auto invs = my::sort_and_count_inversions(std::cbegin(c), std::cend(c), std::begin(outp));
                 CHECK_EQ(invs, 3);
             }
 
             // Ascending-Ascending
             {
-                auto copy = asc;
-                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy));
+                TContainer outp{asc};
+                auto invs = my::sort_and_count_inversions(std::cbegin(asc), std::cend(asc), std::begin(outp));
                 CHECK_EQ(invs, 0);
             }
 
             // Descending-Ascending
             {
-                auto copy = asc;
-                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy), std::greater<int>{});
+                TContainer outp{asc};
+                auto invs = my::sort_and_count_inversions(std::cbegin(asc), std::cend(asc), std::begin(outp),
+                                                          std::greater<int>{});
                 constexpr auto expected = arrsize * (arrsize - 1) / 2;
                 CHECK_EQ(invs, expected);
             }
 
             // Ascending-Descending
             {
-                auto copy = des;
-                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy));
+                TContainer outp{des};
+                auto invs = my::sort_and_count_inversions(std::cbegin(des), std::cend(des), std::begin(outp));
                 constexpr auto expected = arrsize * (arrsize - 1) / 2;
                 CHECK_EQ(invs, expected);
             }
             // Descending-Descending
             {
-                auto copy = des;
-                auto invs = my::sort_and_count_inversions(std::begin(copy), std::end(copy), std::greater<int>{});
+                TContainer outp{des};
+                auto invs = my::sort_and_count_inversions(std::cbegin(des), std::cend(des), std::begin(outp),
+                                                          std::greater<int>{});
                 CHECK_EQ(invs, 0);
             }
         }

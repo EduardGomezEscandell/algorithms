@@ -13,7 +13,8 @@ std::vector<int> random_vector(const std::size_t size, const int max_value = std
     return v;
 }
 
-template <typename InputIterator> void verify_sorted(const InputIterator begin, const InputIterator end)
+template <typename InputIterator>
+void verify_sorted(const InputIterator begin, const InputIterator end)
 {
     auto result = std::adjacent_find(begin, end, [](auto x, auto y) { return x > y; });
 
@@ -35,9 +36,11 @@ int main(int argc, char **argv)
         return 1000;
     }();
 
-    auto v = random_vector(sample_size, 10 * sample_size);
-    my::merge_sort(v.begin(), v.end());
-    verify_sorted(v.begin(), v.end());
+    const auto v = random_vector(sample_size, 10 * sample_size);
+    auto out = std::vector(v);
+
+    my::merge_sort(v.cbegin(), v.cend(), out.begin());
+    verify_sorted(out.begin(), out.end());
 }
 /*
 time ./mergesort 1000    ->    0,004s
