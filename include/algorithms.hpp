@@ -269,7 +269,7 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     }
 
     const auto pivot = *std::next(begin, size / 2);
-    auto partition_point = std::partition(begin, end, [&](auto& x) -> bool { return compare(x, pivot); });
+    auto partition_point = my::partition(begin, end, [&](auto& x) -> bool { return compare(x, pivot); });
 
     quick_sort(begin, partition_point, compare);
     quick_sort(partition_point, end, compare);
