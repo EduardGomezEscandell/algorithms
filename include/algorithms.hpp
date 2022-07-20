@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include <numeric>
-#include <pstl/glue_execution_defs.h>
+#include <cassert>
 
 namespace my
 {
@@ -209,6 +209,9 @@ OutputIterator merge_sort_impl(InputIterator begin,
 template <typename Iterator, typename UnaryPredicate>
 Iterator partition(Iterator begin, Iterator end, UnaryPredicate pred)
 {
+    if (begin == end) {
+        return begin;
+    }
     auto partition_point = begin;
     for (; begin != end; std::advance(begin, 1)) {
         if (pred(*begin)) {
@@ -280,24 +283,23 @@ namespace internal
 {
 
 template <typename ForwardIterator, typename Comparator>
-ForwardIterator quick_sort_choose_pivot(ForwardIterator begin, ForwardIterator end, Comparator&& compare)
+ForwardIterator quick_sort_choose_pivot(ForwardIterator begin,
+                                        ForwardIterator end,
+                                        [[maybe_unused]] Comparator&& compare)
 {
+    assert(begin != end);
+
     switch (AlgoConfig::QUICKSORT_PIVOT_CHOICE) {
     case AlgoConfig::QuicksortPivotChoice::FIRST:
         return begin;
     case AlgoConfig::QuicksortPivotChoice::LAST: {
         const auto size = std::distance(begin, end);
-        if (size == 0) {
-            return begin;
-        }
         return std::next(begin, size - 1);
     }
     case AlgoConfig::QuicksortPivotChoice::SAMPLE_3: {
         const auto size = std::distance(begin, end);
-        if (size == 0) {
-            return begin;
-        }
-        std::array<ForwardIterator, 3> arr{begin, std::next(begin, size / 2), std::next(begin, size - 1)};
+        const auto midpoint = (size - 1) / 2;
+        std::array<ForwardIterator, 3> arr{begin, std::next(begin, midpoint), std::next(begin, size - 1)};
 
         auto iter_comp = [&](const auto& it1, const auto& it2) { return compare(*it1, *it2); };
         non_recursive_sort<typename std::array<ForwardIterator, 3>::iterator, decltype(iter_comp), void>(
@@ -308,12 +310,24 @@ ForwardIterator quick_sort_choose_pivot(ForwardIterator begin, ForwardIterator e
 }
 }
 
+#ifdef QUICKSORT_COUNT_COMPARISONS
+inline std::size_t n_comparisons;
+#endif
+
 /// In-situ, non-randomized quicksort
 template <typename InputIterator,
           typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
 {
+    if (begin == end) {
+        return;
+    }
     const auto size = std::distance(begin, end);
+
+#ifdef QUICKSORT_COUNT_COMPARISONS
+    n_comparisons += size - 1;
+#endif
+
     if (size < internal::AlgoConfig::QUICKSORT_MIN_SIZE) {
         my::internal::non_recursive_sort<InputIterator, Comparator, void>(begin, end, compare, nullptr);
         return;
@@ -323,8 +337,7 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
 
     // Copying pivot value to begin
     std::iter_swap(pivot, begin);
-    pivot = begin;
-    std::advance(begin, 1);
+    pivot = std::exchange(begin, std::next(begin));
 
     auto partition_point = my::partition(begin, end, [&](const auto& x) -> bool { return compare(x, *pivot); });
 
@@ -332,7 +345,8 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     if (partition_point != begin) {
         auto last_left = std::next(begin, std::distance(begin, partition_point) - 1);
         std::iter_swap(pivot, last_left);
-        quick_sort(begin, last_left, compare);
+        begin = std::exchange(pivot, last_left);
+        quick_sort(begin, pivot, compare);
     }
     quick_sort(partition_point, end, compare);
 }

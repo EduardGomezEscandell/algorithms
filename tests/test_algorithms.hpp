@@ -118,6 +118,16 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
         std::vector<int> arr(arrsize, 0);
         std::iota(arr.begin(), arr.end(), 0);
 
+        // Empty
+        TContainer c{};
+        my::quick_sort(std::begin(c), std::end(c));
+        CHECK_EQ(c, TContainer{});
+
+        // Small
+        TContainer a{3, 8, 2, 5, 1, 4, 7, 6};
+        my::quick_sort(std::begin(a), std::end(a));
+        CHECK_EQ(a, TContainer{1, 2, 3, 4, 5, 6, 7, 8});
+
         TContainer asc(arr.cbegin(), arr.cend());
         TContainer des(arr.crbegin(), arr.crend());
         TContainer des2(des);
@@ -129,11 +139,6 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
         // Descending
         my::quick_sort(std::begin(asc), std::end(asc), std::greater<int>{});
         CHECK_EQ(asc, des);
-
-        // Empty
-        TContainer c{};
-        my::quick_sort(std::begin(c), std::end(c));
-        CHECK_EQ(c, TContainer{});
     }
 
     SUBCASE("sort_and_count_inversions")

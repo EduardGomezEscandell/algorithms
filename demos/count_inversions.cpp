@@ -13,7 +13,7 @@ int main()
     std::vector<datatype> data;
     data.reserve(100'000);
 
-    auto file = std::ifstream("data/numbers-1-to-100k-unsorted.txt");
+    auto file = std::ifstream("data/inversions-data.txt");
 
     if (file.bad()) {
         std::cerr << "Failed to open file" << std::endl;
