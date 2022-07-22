@@ -37,10 +37,10 @@ inline std::ptrdiff_t AlgoConfig::QUICKSORT_MIN_SIZE = 100;
 inline auto AlgoConfig::QUICKSORT_PIVOT_CHOICE = AlgoConfig::QuicksortPivotChoice::RANDOM;
 
 /// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
-template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
+template <typename BiderectionalIterator, typename BinaryPredicate, typename SwapCounter>
 BiderectionalIterator sort_last_forward(BiderectionalIterator first,
                                         BiderectionalIterator last,
-                                        Comparator comp,
+                                        BinaryPredicate comp,
                                         SwapCounter* swaps)
 {
     constexpr bool count_swaps = !std::is_same_v<SwapCounter, void>;
@@ -68,19 +68,22 @@ BiderectionalIterator sort_last_forward(BiderectionalIterator first,
 }
 
 // In-situ insertion-sort
-template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
-void insertion_sort_impl(BiderectionalIterator begin, BiderectionalIterator end, Comparator comp, SwapCounter* swaps)
+template <typename BiderectionalIterator, typename BinaryPredicate, typename SwapCounter>
+void insertion_sort_impl(BiderectionalIterator begin,
+                         BiderectionalIterator end,
+                         BinaryPredicate comp,
+                         SwapCounter* swaps)
 {
     auto begin_unsorted = begin;
     while (begin_unsorted != end) {
         std::advance(begin_unsorted, 1);
-        sort_last_forward<BiderectionalIterator, Comparator, SwapCounter>(begin, begin_unsorted, comp, swaps);
+        sort_last_forward<BiderectionalIterator, BinaryPredicate, SwapCounter>(begin, begin_unsorted, comp, swaps);
     }
 }
 
 /// In-situ selection-sort
-template <typename InputIterator, typename Comparator>
-void selection_sort_impl(InputIterator begin, InputIterator end, Comparator compare)
+template <typename InputIterator, typename BinaryPredicate>
+void selection_sort_impl(InputIterator begin, InputIterator end, BinaryPredicate compare)
 {
     for (; begin != end; std::advance(begin, 1)) {
         auto min_elem = std::min_element(begin, end, compare);
@@ -89,16 +92,16 @@ void selection_sort_impl(InputIterator begin, InputIterator end, Comparator comp
 }
 
 // Non-recursive search algorithm metaprogramming
-template <typename Iterator, typename Comparator, typename SwapCounter>
-void non_recursive_sort(Iterator begin, Iterator end, Comparator compare, SwapCounter* swaps)
+template <typename Iterator, typename BinaryPredicate, typename SwapCounter>
+void non_recursive_sort(Iterator begin, Iterator end, BinaryPredicate compare, SwapCounter* swaps)
 {
     if constexpr (std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category,
                                       std::bidirectional_iterator_tag>::value) {
-        insertion_sort_impl<Iterator, Comparator, SwapCounter>(begin, end, compare, swaps);
+        insertion_sort_impl<Iterator, BinaryPredicate, SwapCounter>(begin, end, compare, swaps);
     } else {
         static_assert(std::is_same_v<SwapCounter, void>,
                       "Swap counter is not supported for non-bidirectional iterators");
-        selection_sort_impl<Iterator, Comparator>(begin, end, compare);
+        selection_sort_impl<Iterator, BinaryPredicate>(begin, end, compare);
     }
 }
 
@@ -125,14 +128,14 @@ namespace internal
 template <typename LInputIterator,
           typename RInputIterator,
           typename OutputIterator,
-          typename Comparator,
+          typename BinaryPredicate,
           typename SwapCounter = void>
 OutputIterator merge_impl(LInputIterator left_begin,
                           LInputIterator left_end,
                           RInputIterator right_begin,
                           RInputIterator right_end,
                           OutputIterator out_begin,
-                          Comparator compare,
+                          BinaryPredicate compare,
                           SwapCounter* swaps = nullptr)
 {
     constexpr bool count_swaps = !std::is_same_v<SwapCounter, void>;
@@ -164,18 +167,18 @@ OutputIterator merge_impl(LInputIterator left_begin,
 }
 
 /// Merge-sort
-template <typename InputIterator, typename OutputIterator, typename Comparator, typename SwapCounter>
+template <typename InputIterator, typename OutputIterator, typename BinaryPredicate, typename SwapCounter>
 OutputIterator merge_sort_impl(InputIterator begin,
                                InputIterator end,
                                OutputIterator out_begin,
-                               Comparator compare,
+                               BinaryPredicate compare,
                                SwapCounter* swaps)
 {
     const auto size = std::distance(begin, end);
 
     if (size < AlgoConfig::MERGESORT_MIN_SIZE) {
         auto out_end = std::copy(begin, end, out_begin);
-        non_recursive_sort<OutputIterator, Comparator, SwapCounter>(out_begin, out_end, compare, swaps);
+        non_recursive_sort<OutputIterator, BinaryPredicate, SwapCounter>(out_begin, out_end, compare, swaps);
         return out_end;
     }
 
@@ -186,9 +189,9 @@ OutputIterator merge_sort_impl(InputIterator begin,
     auto int_middle = std::next(int_begin, size / 2);
     auto int_end = intermediate_container.end();
 
-    merge_sort_impl<InputIterator, decltype(int_begin), Comparator, SwapCounter>(
+    merge_sort_impl<InputIterator, decltype(int_begin), BinaryPredicate, SwapCounter>(
       begin, middle, int_begin, compare, swaps);
-    merge_sort_impl<InputIterator, decltype(int_begin), Comparator, SwapCounter>(
+    merge_sort_impl<InputIterator, decltype(int_begin), BinaryPredicate, SwapCounter>(
       middle, end, int_middle, compare, swaps);
 
     // Merging
@@ -225,58 +228,58 @@ Iterator partition(Iterator begin, Iterator end, UnaryPredicate pred)
 }
 
 template <typename InputIterator,
-          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
-void insertion_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
+          typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+void insertion_sort(InputIterator begin, InputIterator end, BinaryPredicate compare = BinaryPredicate{})
 {
-    internal::insertion_sort_impl<InputIterator, Comparator, void>(begin, end, compare, nullptr);
+    internal::insertion_sort_impl<InputIterator, BinaryPredicate, void>(begin, end, compare, nullptr);
 }
 
 template <typename InputIterator,
-          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
-void selection_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
+          typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+void selection_sort(InputIterator begin, InputIterator end, BinaryPredicate compare = BinaryPredicate{})
 {
-    internal::selection_sort_impl<InputIterator, Comparator>(begin, end, compare);
+    internal::selection_sort_impl<InputIterator, BinaryPredicate>(begin, end, compare);
 }
 
-template <typename LInputIterator, typename RInputIterator, typename OutputIterator, typename Comparator>
+template <typename LInputIterator, typename RInputIterator, typename OutputIterator, typename BinaryPredicate>
 OutputIterator merge(LInputIterator left_begin,
                      LInputIterator left_end,
                      RInputIterator right_begin,
                      RInputIterator right_end,
                      OutputIterator out_begin,
-                     Comparator compare)
+                     BinaryPredicate compare)
 {
-    return internal::merge_impl<LInputIterator, RInputIterator, OutputIterator, Comparator>(
+    return internal::merge_impl<LInputIterator, RInputIterator, OutputIterator, BinaryPredicate>(
       left_begin, left_end, right_begin, right_end, out_begin, compare, nullptr);
 }
 
 template <typename InputIterator,
           typename OutputIterator,
-          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+          typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 OutputIterator merge_sort(InputIterator begin,
                           InputIterator end,
                           OutputIterator out_begin,
-                          Comparator compare = Comparator{})
+                          BinaryPredicate compare = BinaryPredicate{})
 {
-    return internal::merge_sort_impl<InputIterator, OutputIterator, Comparator, void>(
+    return internal::merge_sort_impl<InputIterator, OutputIterator, BinaryPredicate, void>(
       begin, end, out_begin, compare, nullptr);
 }
 
 /// In-situ merge-sort + inversion count
 template <typename InputIterator,
           typename OutputIterator,
-          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+          typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 std::size_t sort_and_count_inversions(InputIterator begin,
                                       InputIterator end,
                                       OutputIterator out_begin,
-                                      Comparator compare = Comparator{})
+                                      BinaryPredicate compare = BinaryPredicate{})
 {
     static_assert(std::is_convertible<typename std::iterator_traits<InputIterator>::iterator_category,
                                       std::bidirectional_iterator_tag>::value,
                   "InputIterator must be bidirectional");
 
     std::size_t swaps = 0;
-    internal::merge_sort_impl<InputIterator, OutputIterator, Comparator, std::size_t>(
+    internal::merge_sort_impl<InputIterator, OutputIterator, BinaryPredicate, std::size_t>(
       begin, end, out_begin, compare, &swaps);
     return swaps;
 }
@@ -284,10 +287,10 @@ std::size_t sort_and_count_inversions(InputIterator begin,
 namespace internal
 {
 
-template <typename ForwardIterator, typename Comparator>
+template <typename ForwardIterator, typename BinaryPredicate>
 ForwardIterator quick_sort_choose_pivot(ForwardIterator begin,
                                         ForwardIterator end,
-                                        [[maybe_unused]] Comparator&& compare)
+                                        [[maybe_unused]] BinaryPredicate&& compare)
 {
     assert(begin != end);
 
@@ -360,8 +363,8 @@ inline std::size_t n_comparisons;
 
 /// In-situ, non-randomized quicksort
 template <typename InputIterator,
-          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
-void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Comparator{})
+          typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+void quick_sort(InputIterator begin, InputIterator end, BinaryPredicate compare = BinaryPredicate{})
 {
     if (begin == end) {
         return;
@@ -373,7 +376,7 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
 #endif
 
     if (size < internal::AlgoConfig::QUICKSORT_MIN_SIZE) {
-        my::internal::non_recursive_sort<InputIterator, Comparator, void>(begin, end, compare, nullptr);
+        my::internal::non_recursive_sort<InputIterator, BinaryPredicate, void>(begin, end, compare, nullptr);
         return;
     }
 
@@ -397,11 +400,14 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
 
 /**
  * Finds the @n th value in sorted order in an unsorted range [ @begin , @end ), according to ordering defined by
- * @compare.
+ * binary predicate @compare.
  */
 template <typename InputIterator,
-          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
-InputIterator nth_element(InputIterator begin, InputIterator end, std::size_t n, Comparator compare = Comparator{})
+          typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+InputIterator nth_element(InputIterator begin,
+                          InputIterator end,
+                          std::size_t n,
+                          BinaryPredicate compare = BinaryPredicate{})
 {
     std::size_t size = std::distance(begin, end);
     assert(n < size);
