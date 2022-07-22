@@ -6,6 +6,7 @@
 #include <iterator>
 #include <numeric>
 #include <cassert>
+#include <random>
 
 namespace my
 {
@@ -23,7 +24,8 @@ struct AlgoConfig
     {
         FIRST,
         LAST,
-        SAMPLE_3
+        SAMPLE_3,
+        RANDOM
     };
 
     static QuicksortPivotChoice QUICKSORT_PIVOT_CHOICE;
@@ -32,7 +34,7 @@ struct AlgoConfig
 inline std::ptrdiff_t AlgoConfig::MERGESORT_MIN_SIZE = 100;
 inline std::ptrdiff_t AlgoConfig::BINSEARCH_MIN_SIZE = 100;
 inline std::ptrdiff_t AlgoConfig::QUICKSORT_MIN_SIZE = 100;
-inline auto AlgoConfig::QUICKSORT_PIVOT_CHOICE = AlgoConfig::QuicksortPivotChoice::FIRST;
+inline auto AlgoConfig::QUICKSORT_PIVOT_CHOICE = AlgoConfig::QuicksortPivotChoice::RANDOM;
 
 /// Component of insertion sort. Takes a sorted range [first, last) rotates moves the 'last' element to the right place.
 template <typename BiderectionalIterator, typename Comparator, typename SwapCounter>
@@ -299,12 +301,23 @@ ForwardIterator quick_sort_choose_pivot(ForwardIterator begin,
     case AlgoConfig::QuicksortPivotChoice::SAMPLE_3: {
         const auto size = std::distance(begin, end);
         const auto midpoint = (size - 1) / 2;
-        std::array<ForwardIterator, 3> arr{begin, std::next(begin, midpoint), std::next(begin, size - 1)};
+
+        auto midpoint_it = std::next(begin, midpoint);
+        auto last_it = std::next(midpoint_it, size - midpoint - 1);
+        std::array<ForwardIterator, 3> arr{begin, midpoint_it, last_it};
 
         auto iter_comp = [&](const auto& it1, const auto& it2) { return compare(*it1, *it2); };
         non_recursive_sort<typename std::array<ForwardIterator, 3>::iterator, decltype(iter_comp), void>(
           arr.begin(), arr.end(), iter_comp, nullptr);
         return arr[1];
+    }
+    case AlgoConfig::QuicksortPivotChoice::RANDOM: {
+        const auto size = std::distance(begin, end);
+
+        std::uniform_int_distribution<std::size_t> distrib(0, size - 1);
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        return std::next(begin, distrib(gen));
     }
     }
 }
