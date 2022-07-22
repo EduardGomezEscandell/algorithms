@@ -232,4 +232,36 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
             std::for_each(pp, std::end(c), [](auto x) { CHECK(x % 2 == 0); });
         }
     }
+
+    SUBCASE("nth_element")
+    {
+        const std::size_t arrsize = my::internal::AlgoConfig::QUICKSORT_MIN_SIZE * 2.1;
+        std::vector<int> arr(arrsize, 0);
+        std::iota(arr.begin(), arr.end(), 0);
+
+        // Trivial
+        {
+            TContainer c{1};
+            auto it = my::nth_element(std::begin(c), std::end(c), 0);
+            REQUIRE_EQ(it, std::begin(c));
+        }
+
+        // LT
+        {
+            TContainer a{4, 1, 3, 6, 2, 5};
+            for (int i = 0; i < 6; ++i) {
+                auto it = my::nth_element(std::begin(a), std::end(a), i);
+                CHECK_EQ(*it, i + 1);
+            }
+        }
+
+        // GT
+        {
+            TContainer a{4, 1, 3, 6, 2, 5};
+            for (int i = 0; i < 6; ++i) {
+                auto it = my::nth_element(std::begin(a), std::end(a), i, std::greater<int>{});
+                CHECK_EQ(*it, 6 - i);
+            }
+        }
+    }
 }

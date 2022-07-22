@@ -321,7 +321,38 @@ ForwardIterator quick_sort_choose_pivot(ForwardIterator begin,
     }
     }
 }
+
+/*
+  Preconditions:
+    - `it` and `anchor` are in the same array
+    - `anchor` preceedes `it` (corollary: `it` is not the first element of the array)
+
+  Postconditions:
+    - returns the element preceding `it` in the array.
+
+  Complexity
+    Given the distance between `anchor` and `it`, named `n`:
+    - O(1) for bidirectional and random access iterators.
+    - O(n) for forward iterators.
+
+  Advise
+    Using `begin` as the anchor is the most general choice.
+*/
+template <typename Iterator>
+Iterator prev(Iterator it, [[maybe_unused]] Iterator anchor)
+{
+    if constexpr (std::is_convertible<typename std::iterator_traits<Iterator>::iterator_category,
+                                      std::bidirectional_iterator_tag>::value) {
+        return std::prev(it);
+    } else {
+        auto prev = anchor;
+        while (anchor != it) {
+            prev = std::exchange(anchor, std::next(anchor)); // same as prev=anchor++
+        }
+        return prev;
+    }
 }
+} // namespace internal
 
 #ifdef QUICKSORT_COUNT_COMPARISONS
 inline std::size_t n_comparisons;
@@ -356,7 +387,7 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
 
     // Sort left side, if it exists
     if (partition_point != begin) {
-        auto last_left = std::next(begin, std::distance(begin, partition_point) - 1);
+        auto last_left = internal::prev(partition_point, begin);
         std::iter_swap(pivot, last_left);
         begin = std::exchange(pivot, last_left);
         quick_sort(begin, pivot, compare);
@@ -364,4 +395,36 @@ void quick_sort(InputIterator begin, InputIterator end, Comparator compare = Com
     quick_sort(partition_point, end, compare);
 }
 
+/**
+ * Finds the @n th value in sorted order in an unsorted range [ @begin , @end ), according to ordering defined by
+ * @compare.
+ */
+template <typename InputIterator,
+          typename Comparator = std::less<typename std::iterator_traits<InputIterator>::value_type>>
+InputIterator nth_element(InputIterator begin, InputIterator end, std::size_t n, Comparator compare = Comparator{})
+{
+    std::size_t size = std::distance(begin, end);
+    assert(n < size);
+
+    if (size == 1) {
+        return begin;
+    }
+
+    auto pivot = internal::quick_sort_choose_pivot(begin, end, compare);
+    std::iter_swap(pivot, begin);
+    pivot = std::exchange(begin, std::next(begin));
+
+    auto partition_point = my::partition(begin, end, [&](const auto& x) -> bool { return compare(x, *pivot); });
+    std::size_t pivot_pos = std::distance(begin, partition_point);
+
+    if (pivot_pos > n) {
+        return nth_element(begin, partition_point, n, compare);
+    }
+    if (pivot_pos < n) {
+        return nth_element(partition_point, end, n - pivot_pos - 1, compare);
+    }
+
+    return pivot;
 }
+
+} // namespace my
