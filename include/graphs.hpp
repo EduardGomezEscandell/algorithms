@@ -8,6 +8,7 @@
 #include <utility>
 #include <optional>
 #include <cassert>
+#include <execution>
 
 namespace my
 {
@@ -113,8 +114,8 @@ template <typename T>
 {
     // Number of edges
     const auto nedges = std::transform_reduce(
-      graph.nodes().begin(), graph.nodes().end(), 0, [&](auto const& node) { return node.neighbours().size(); },
-      std::plus<std::size_t>{});
+      std::execution::par_unseq, graph.nodes().begin(), graph.nodes().end(), 0,
+      [&](auto const& node) { return node.neighbours().size(); }, std::plus<std::size_t>{});
 
     if (nedges == 0) {
         return {0, 0, false};
@@ -139,6 +140,9 @@ template <typename T>
     throw std::logic_error("random_edge_if: edge not found");
 }
 
+// Creates a new node that absorbs the give two nodes.
+// The edge between them disapears
+// Connections to the old nodes are now made to the new one.
 template <typename T>
 void contract(graph<T>& graph, typename T::id_type from, typename T::id_type to)
 {
@@ -149,12 +153,19 @@ void contract(graph<T>& graph, typename T::id_type from, typename T::id_type to)
     graph.node(from).clear_neightbours();
     graph.node(to).clear_neightbours();
 
-    std::for_each(graph.nodes().begin(), graph.nodes().end(), [&](auto& node) {
+    std::for_each(std::execution::par_unseq, graph.nodes().begin(), graph.nodes().end(), [&](auto& node) {
         if (node.remove_neighbour(from)) {
             node.add_neighbour(new_node.id());
         }
         if (node.remove_neighbour(to)) {
             node.add_neighbour(new_node.id());
+        }
+
+        if (!node.parent().has_value()) {
+            return;
+        }
+        if (node.parent() == from || node.parent() == to) {
+            node.parent() = std::make_optional(new_node.id());
         }
     });
 }
