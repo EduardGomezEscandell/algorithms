@@ -3,11 +3,14 @@
 #include <doctest/doctest.h>
 
 #include "include/algorithms.hpp"
+#include "include/functional_helpers.hpp"
 
-#include <vector>
-#include <list>
-#include <forward_list>
+#include <charconv>
 #include <execution>
+#include <forward_list>
+#include <list>
+#include <sstream>
+#include <vector>
 
 TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int>, std::forward_list<int>)
 {
@@ -262,6 +265,30 @@ TEST_CASE_TEMPLATE("algortihms.hpp", TContainer, std::vector<int>, std::list<int
                 auto it = my::nth_element(std::begin(a), std::end(a), i, std::greater<int>{});
                 CHECK_EQ(*it, 6 - i);
             }
+        }
+    }
+
+    SUBCASE("batch_transform_reduce")
+    {
+        {
+            std::string data{"0\t5\t9\t13\t27"};
+
+            auto result = batch_transform_reduce(
+              data.cbegin(), data.cend(), 0, my::equal_to('\t'),
+              [](auto begin, auto end) -> int { return begin == end ? 0 : std::atol(&*begin); },
+              [=](auto&& acc, auto elem) { return acc + elem; });
+
+            CHECK_EQ(result, 54);
+        }
+        {
+            std::string data{"0\t5\t9\t13\t27\t"}; // Separator at end of line
+
+            auto result = batch_transform_reduce(
+              data.cbegin(), data.cend(), 0, my::equal_to('\t'),
+              [](auto begin, auto end) -> int { return begin == end ? 0 : std::atol(&*begin); },
+              [=](auto&& acc, auto elem) { return acc + elem; });
+
+            CHECK_EQ(result, 54);
         }
     }
 }

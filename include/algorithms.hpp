@@ -125,10 +125,7 @@ InputIterator sorted_partition_point(InputIterator begin, InputIterator end, Una
 namespace internal
 {
 
-template <typename LInputIterator,
-          typename RInputIterator,
-          typename OutputIterator,
-          typename BinaryPredicate,
+template <typename LInputIterator, typename RInputIterator, typename OutputIterator, typename BinaryPredicate,
           typename SwapCounter = void>
 OutputIterator merge_impl(LInputIterator left_begin,
                           LInputIterator left_end,
@@ -189,10 +186,10 @@ OutputIterator merge_sort_impl(InputIterator begin,
     auto int_middle = std::next(int_begin, size / 2);
     auto int_end = intermediate_container.end();
 
-    merge_sort_impl<InputIterator, decltype(int_begin), BinaryPredicate, SwapCounter>(
-      begin, middle, int_begin, compare, swaps);
-    merge_sort_impl<InputIterator, decltype(int_begin), BinaryPredicate, SwapCounter>(
-      middle, end, int_middle, compare, swaps);
+    merge_sort_impl<InputIterator, decltype(int_begin), BinaryPredicate, SwapCounter>(begin, middle, int_begin, compare,
+                                                                                      swaps);
+    merge_sort_impl<InputIterator, decltype(int_begin), BinaryPredicate, SwapCounter>(middle, end, int_middle, compare,
+                                                                                      swaps);
 
     // Merging
     return my::internal::merge_impl(std::move_iterator(int_begin),
@@ -253,21 +250,19 @@ OutputIterator merge(LInputIterator left_begin,
       left_begin, left_end, right_begin, right_end, out_begin, compare, nullptr);
 }
 
-template <typename InputIterator,
-          typename OutputIterator,
+template <typename InputIterator, typename OutputIterator,
           typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 OutputIterator merge_sort(InputIterator begin,
                           InputIterator end,
                           OutputIterator out_begin,
                           BinaryPredicate compare = BinaryPredicate{})
 {
-    return internal::merge_sort_impl<InputIterator, OutputIterator, BinaryPredicate, void>(
-      begin, end, out_begin, compare, nullptr);
+    return internal::merge_sort_impl<InputIterator, OutputIterator, BinaryPredicate, void>(begin, end, out_begin,
+                                                                                           compare, nullptr);
 }
 
 /// In-situ merge-sort + inversion count
-template <typename InputIterator,
-          typename OutputIterator,
+template <typename InputIterator, typename OutputIterator,
           typename BinaryPredicate = std::less<typename std::iterator_traits<InputIterator>::value_type>>
 std::size_t sort_and_count_inversions(InputIterator begin,
                                       InputIterator end,
@@ -279,8 +274,8 @@ std::size_t sort_and_count_inversions(InputIterator begin,
                   "InputIterator must be bidirectional");
 
     std::size_t swaps = 0;
-    internal::merge_sort_impl<InputIterator, OutputIterator, BinaryPredicate, std::size_t>(
-      begin, end, out_begin, compare, &swaps);
+    internal::merge_sort_impl<InputIterator, OutputIterator, BinaryPredicate, std::size_t>(begin, end, out_begin,
+                                                                                           compare, &swaps);
     return swaps;
 }
 
@@ -431,6 +426,27 @@ InputIterator nth_element(InputIterator begin,
     }
 
     return pivot;
+}
+
+/* Divides a sequence according to a predicate, and reduces the intervals.
+ * For instance, to sum a comma-separated list of numbers
+ * batch_reduce(string.cbegin()
+ *              , string.cend()
+ *              , equal_to(,)
+ *              , [](auto begin, auto end) { return begin==end ? 0 : atoi(&*begin); }
+ *              , std::plus<int>{});
+ */
+template <typename ForwardIterator, typename Value, typename UnaryPredicate, typename Transform, typename Reduce>
+auto batch_transform_reduce(ForwardIterator begin, ForwardIterator end, Value value, UnaryPredicate&& Pred,
+                            Transform&& transform, Reduce&& reduce)
+{
+    auto it = begin;
+    while (it != end) {
+        it = std::find_if(begin, end, Pred);
+        value = reduce(std::forward<Value>(value), transform(begin, it));
+        begin = std::next(it);
+    }
+    return value;
 }
 
 } // namespace my
